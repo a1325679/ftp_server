@@ -110,6 +110,7 @@ int ftp_init(const char *conf_path)
   return 0;
 }
 
+#ifdef _WIN32
 HANDLE GetHandleFromProcessName(const char* process_name) {
 	HANDLE handle;
 	HANDLE handle1 = NULL;
@@ -139,3 +140,4 @@ HANDLE GetHandleFromProcessName(const char* process_name) {
 	//CloseHandle(handle1);
 	return NULL;
 }
+#endif

@@ -56,7 +56,7 @@ bool XThread::Setup()
   event_config_free(ev_conf);
   if (!base)
   {
-    log(ERROR, "event_base_new_with_config failed in thread!");
+    log(ERRORS, "event_base_new_with_config failed in thread!");
     return false;
   }
   event *ev = event_new(base, fds[0], EV_READ | EV_PERSIST, NotifyCB, this);

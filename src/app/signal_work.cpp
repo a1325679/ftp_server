@@ -44,9 +44,9 @@ bool InitSignal()
 #ifdef _WIN32
   signal(SIGINT, SignalHandler);
 #else
-  signal(SIGHUP, sigcb);
-  signal(SIGINT, sigcb);
-  signal(SIGQUIT, sigcb);
+  signal(SIGHUP, SignalHandler);
+  signal(SIGINT, SignalHandler);
+  signal(SIGQUIT,SignalHandler);
 #endif
   return true;
 }
