@@ -1,5 +1,9 @@
 # 设置cmake的最低版本和项目名称
 cmake_minimum_required(VERSION 3.0)
+
+set (CMAKE_C_COMPILER "${CMAKE_CURRENT_SOURCE_DIR}/mingw64/bin/gcc.exe")
+set (CMAKE_CXX_COMPILER "${CMAKE_CURRENT_SOURCE_DIR}/mingw64/bin/g++.exe")
+
 project(ftpserver)
 
 
