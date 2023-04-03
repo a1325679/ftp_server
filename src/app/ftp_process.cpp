@@ -130,7 +130,6 @@ HANDLE GetHandleFromProcessName(const char* process_name) {
     {
 			CloseHandle(handle);
 			handle1 = OpenProcess(PROCESS_TERMINATE, FALSE, info->th32ProcessID);
-			printf("sdfdsdfsdfsdf\n");
 			//TerminateProcess(handle1, 0);
 			return handle1;
 		}

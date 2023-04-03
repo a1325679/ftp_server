@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <string>
+#include <vector>
+#include <sstream>
 #include "func.h"
 #include "global.h"
 #include "log.h"
+using namespace std;
 void Rtrim(char *str)
 {
   size_t len = 0;
@@ -47,6 +51,14 @@ void Ltrim(char *str)
   }
   (*p_tmp2) = '\0';
   return;
+}
+void split(const string& s, vector<string>& sv,const char flag) {
+    sv.clear();
+    istringstream iss(s);
+    string temp;
+    while (getline(iss, temp, flag)) {
+        sv.push_back(temp);
+    }
 }
 void ClearWork()
 {

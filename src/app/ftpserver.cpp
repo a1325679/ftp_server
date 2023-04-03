@@ -14,6 +14,10 @@
 #else 
 #include <windows.h>
 #include <conio.h>
+#include<tchar.h>
+#include <Psapi.h>
+#include <string.h>
+#include<TlHelp32.h>
 #endif
 #include "log.h"
 #include "read_conf.h"
@@ -48,14 +52,103 @@ void listen_cb(struct evconnlistener *e, evutil_socket_t s, struct sockaddr *a, 
   log(NOTICE, "%s:%d 已连接",task->ipaddr.c_str(), task->portFrom);
 
 }
-
-int main()
+#ifndef _WIN32
+const char* getProcessPidByName(const char *proc_name)
 {
-  // HWND hWnd = GetConsoleWindow();
-  // ShowWindow(hWnd, SW_HIDE);
-  //HANDLE hWnd = GetHandleFromProcessName("QQ.exe");
+  FILE *fp;
+  char buf[100];
+  char cmd[200] = {'\0'};
+  pid_t pid = -1;
+  sprintf(cmd, "pidof %s", proc_name);
+  if((fp = popen(cmd, "r")) != NULL)
+  {
+    if(fgets(buf, 255, fp) != NULL)
+    {
+      pclose(fp);
+      pid_t p = getpid();
+      std::string own = to_string(p);
+      std::string procid = buf;
+      vector<string> sv;
+      split(procid,sv,' ');
+      if(sv.size()==1){
+        return nullptr;
+      }
+      for(auto &a:sv){
+        if(a!=own) {
+          return a.c_str();
+        }
+      }
+      return nullptr;
+    }
+  }
+  pclose(fp);
+  return nullptr;
+}
+int ParseParamMain(int argc,const char** argv) {
+  if(argc > 2) {
+    return -1;
+  }
+  if(strcmp(argv[1],"start")==0) {
+    const char* proc = getProcessPidByName("./FtpServer");
+    if(proc!=nullptr) {
+      return 1;
+    }
+    return 0;
+  }else if(strcmp(argv[1],"stop")==0) {
+    const char* proc = getProcessPidByName("./FtpServer");
+    if(proc==nullptr) {
+      return -2;
+    }
+    std::string emit_SIGUSR1_to_proc = "kill -USR1 ";
+    emit_SIGUSR1_to_proc+=proc;
+    system(emit_SIGUSR1_to_proc.c_str());
+    return 3;
+  }
+  return -1;
+}
+#else
+int ParseParamMain(int argc,const char** argv){
+  if(argc > 2) {
+    return -1;
+  }
+  HANDLE proc = GetHandleFromProcessName("FtpServer.exe");
 
-  if( ftp_init()!=0 ) {
+  if(strcmp(argv[1],"start")==0) {
+    return 0;
+  }else if(strcmp(argv[1],"stop")==0) {
+    if(proc==nullptr) {
+      return -2;
+    }
+    TerminateProcess(proc, 0);
+    return 3;
+  }
+  return -1;
+}
+
+#endif
+int main(int argc,const char** argv)
+{
+  if(argc > 1) {
+    int ret = ParseParamMain(argc,argv);
+    if(ret == -1) {
+      cout<<"param input error ,it's max 2"<<endl;
+      return 0;
+    }else if(ret == 1) {
+      cout<<"program already start"<<endl;
+      return 0;
+    }else if(ret == -2) {
+      cout<<"program none start\n";
+      return 0;
+    }else if(ret == 3) {
+      cout<<"program alread stop\n";
+      return 0;
+    }
+  }
+  #ifdef _WIN32
+  HWND hWnd = GetConsoleWindow();
+  ShowWindow(hWnd, SW_HIDE);
+  #endif
+  if(ftp_init() != 0) {
     return 0;
   }
 #if _WIN32
