@@ -14,6 +14,10 @@
 #else 
 #include <windows.h>
 #include <conio.h>
+#include<tchar.h>
+#include <Psapi.h>
+#include <string.h>
+#include<TlHelp32.h>
 #endif
 #include "log.h"
 #include "read_conf.h"
@@ -48,6 +52,7 @@ void listen_cb(struct evconnlistener *e, evutil_socket_t s, struct sockaddr *a, 
   log(NOTICE, "%s:%d 已连接",task->ipaddr.c_str(), task->portFrom);
 
 }
+#ifndef _WIN32
 const char* getProcessPidByName(const char *proc_name)
 {
   FILE *fp;
@@ -101,6 +106,26 @@ int ParseParamMain(int argc,const char** argv) {
   }
   return -1;
 }
+#else
+int ParseParamMain(int argc,const char** argv){
+  if(argc > 2) {
+    return -1;
+  }
+  HANDLE proc = GetHandleFromProcessName("FtpServer.exe");
+
+  if(strcmp(argv[1],"start")==0) {
+    return 0;
+  }else if(strcmp(argv[1],"stop")==0) {
+    if(proc==nullptr) {
+      return -2;
+    }
+    TerminateProcess(proc, 0);
+    return 3;
+  }
+  return -1;
+}
+
+#endif
 int main(int argc,const char** argv)
 {
   if(argc > 1) {
@@ -119,9 +144,8 @@ int main(int argc,const char** argv)
       return 0;
     }
   }
-  // HWND hWnd = GetConsoleWindow();
-  // ShowWindow(hWnd, SW_HIDE);
-  //HANDLE hWnd = GetHandleFromProcessName("QQ.exe");
+  HWND hWnd = GetConsoleWindow();
+  ShowWindow(hWnd, SW_HIDE);
   if(ftp_init() != 0) {
     return 0;
   }
