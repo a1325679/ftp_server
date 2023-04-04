@@ -8,9 +8,15 @@ struct bufferevent;
 class FtpTask : public XTask
 {
 public:
-	std::string curDir_ = "/";
+  FtpTask() {
+    SetRootDir();
+  }
+  virtual ~FtpTask() {
+
+  }
+  std::string curDir_ = "/";
 	//std::string rootDir = ".";
-  std::string rootDir_ = "../file";
+  std::string rootDir_;
   std::string move_file_;
   // PORT 数据通道的IP和端口
   std::string ip_ = "";
@@ -19,8 +25,9 @@ public:
 	// 命令通道
 	FtpTask *cmd_task_ = 0;
 
-	// 解析协议
-	virtual void Parse(std::string type, std::string msg) {}
+  void SetRootDir();
+  // 解析协议
+  virtual void Parse(std::string type, std::string msg) {}
 	// 回复cmd消息
 	void ResCMD(std::string msg);
 

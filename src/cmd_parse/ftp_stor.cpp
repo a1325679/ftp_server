@@ -23,14 +23,14 @@ void FtpStor::Parse(std::string type, std::string msg)
     msg.pop_back();
   }
   log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr_.c_str(), port_from_, type.c_str(), msg.c_str());
-
   int pos = msg.rfind(" ") + 1;
   string filename = msg.substr(pos);
-  string path = cmd_task_->rootDir_;
+  string path = cmd_task_->rootDir_.c_str();
   path += cmd_task_->curDir_;
   path += "/";
   path += filename;
   fp = fopen(path.c_str(), "wb+");
+  
   if (fp)
   {
     // 连接数据通道

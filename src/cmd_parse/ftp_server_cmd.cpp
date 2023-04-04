@@ -50,7 +50,6 @@ static void ReadEvent(bufferevent* bev,void *arg)
 				break;
 			type += data[i];
 		}
-		//cout << "type is [" << type << "]" << endl;
 		if (task->calls.find(type) != task->calls.end())
 		{
 			FtpTask *t = task->calls[type];

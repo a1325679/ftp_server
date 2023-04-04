@@ -1,4 +1,5 @@
 #include "ftp_task.h"
+#include "func.h"
 #include <event2/event.h>
 #include <event2/bufferevent.h>
 #include<string.h>
@@ -7,6 +8,10 @@
 #endif
 #include <iostream>
 using namespace std;
+void FtpTask::SetRootDir() {
+  string path = Config::GetInstance()->GetString("RootPath");
+  rootDir_ = path;
+}
 void FtpTask::Send(std::string data)
 {
 	Send(data.c_str(), data.size());
