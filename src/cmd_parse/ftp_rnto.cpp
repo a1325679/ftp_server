@@ -29,13 +29,13 @@ void FtpRnto::Parse(std::string type, std::string msg)
   file_name = rootDir_ + file_name;
 #ifdef _WIN32
   std::string cmd = "move ";
-  cmd += moveFile;
+  cmd += move_file_;
   cmd += " ";
   cmd += file_name;
-  std::cout << "movefile: " << moveFile << " fiel_name: " << file_name << "\n";
+  //std::cout << "movefile: " << moveFile << " fiel_name: " << file_name << "\n";
   //MoveFileA(moveFile.c_str(), file_name.c_str());
   //system(cmd.c_str());
-  rename(moveFile.c_str(), file_name.c_str());
+  rename(move_file_.c_str(), file_name.c_str());
 #else
   rename(move_file_.c_str(), file_name.c_str());
 #endif
