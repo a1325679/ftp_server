@@ -1,6 +1,5 @@
 #include "ftp_stor.h"
-#include "macor.h"
-#include "log.h"
+#include "func.h"
 #include <iostream>
 #include <event2/bufferevent.h>
 #include <event2/event.h>
@@ -23,12 +22,12 @@ void FtpStor::Parse(std::string type, std::string msg)
     msg.pop_back();
     msg.pop_back();
   }
-  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr.c_str(), portFrom, type.c_str(), msg.c_str());
+  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr_.c_str(), port_from_, type.c_str(), msg.c_str());
 
   int pos = msg.rfind(" ") + 1;
   string filename = msg.substr(pos);
-  string path = cmdTask->rootDir;
-  path += cmdTask->curDir;
+  string path = cmd_task_->rootDir_;
+  path += cmd_task_->curDir_;
   path += "/";
   path += filename;
   fp = fopen(path.c_str(), "wb+");
@@ -67,7 +66,7 @@ void FtpStor::EventWork(struct bufferevent *bev, short what)
   //  如果对方网络断掉，或者机器死机有可能收不到BEV_EVENT_EOF数据
   if (what & (BEV_EVENT_EOF | BEV_EVENT_ERROR | BEV_EVENT_TIMEOUT))
   {
-    log(NOTICE, "%s:%d -> FtpSTOR BEV_EVENT_EOF | BEV_EVENT_ERROR |BEV_EVENT_TIMEOUT", ipaddr.c_str(), portFrom);
+    log(NOTICE, "%s:%d -> FtpSTOR BEV_EVENT_EOF | BEV_EVENT_ERROR |BEV_EVENT_TIMEOUT", ipaddr_.c_str(), port_from_);
     
     Close();
     if(fp) {
@@ -78,7 +77,7 @@ void FtpStor::EventWork(struct bufferevent *bev, short what)
   }
   else if (what & BEV_EVENT_CONNECTED)
   {
-    log(NOTICE, "%s:%d -> FtpSTOR BEV_EVENT_CONNECTED", ipaddr.c_str(), portFrom);
+    log(NOTICE, "%s:%d -> FtpSTOR BEV_EVENT_CONNECTED", ipaddr_.c_str(), port_from_);
   
   }
 }

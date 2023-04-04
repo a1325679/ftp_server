@@ -25,13 +25,13 @@ public:
 
 	~XThread();
 	
-	int id = 0;
+	int id_ = 0;
 public:
-	int notify_send_fd = 0;
-	struct event_base* base = 0;
+	int notify_send_fd_ = 0;
+	struct event_base* base_ = 0;
 	
-	std::list<XTask*> tasks;
-	std::mutex tasks_mutex;
+	std::list<XTask*> tasks_;
+	std::mutex tasks_mutex_;
 
 };
 #endif

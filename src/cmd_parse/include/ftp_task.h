@@ -8,16 +8,16 @@ struct bufferevent;
 class FtpTask : public XTask
 {
 public:
-	std::string curDir = "/";
+	std::string curDir_ = "/";
 	//std::string rootDir = ".";
-  std::string rootDir = "../file";
-  std::string moveFile;
+  std::string rootDir_ = "../file";
+  std::string move_file_;
   // PORT 数据通道的IP和端口
-  std::string ip = "";
-	int port = 0;
+  std::string ip_ = "";
+	int port_ = 0;
 
 	// 命令通道
-	FtpTask *cmdTask = 0;
+	FtpTask *cmd_task_ = 0;
 
 	// 解析协议
 	virtual void Parse(std::string type, std::string msg) {}
@@ -43,8 +43,8 @@ protected:
 	static void EventCB(struct bufferevent *bev, short what, void *arg);
 	std::string GetListData(std::string path);
 	// 命令bev
-	struct bufferevent *bev = 0;
-	FILE *fp = 0;
+	struct bufferevent *bev_ = 0;
+	FILE *fp_ = 0;
 };
 
 #endif

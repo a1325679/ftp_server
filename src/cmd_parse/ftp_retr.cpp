@@ -57,12 +57,12 @@ void FtpRetr::Parse(std::string type, std::string msg)
     msg.pop_back();
     msg.pop_back();
   }
-  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr.c_str(), portFrom, type.c_str(), msg.c_str());
+  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr_.c_str(), port_from_, type.c_str(), msg.c_str());
 
   int pos = msg.rfind(" ") + 1;
   string filename = msg.substr(pos);
-  string path = cmdTask->rootDir;
-  path += cmdTask->curDir;
+  string path = cmd_task_->rootDir_;
+  path += cmd_task_->curDir_;
   path += "/";
   path += filename;
   //std::cout << path << std::endl;
@@ -75,7 +75,7 @@ void FtpRetr::Parse(std::string type, std::string msg)
     // 发送开始下载文件的指令
     ResCMD("150 File OK\r\n");
     // 触发写入事件
-    bufferevent_trigger(bev, EV_WRITE, 0);
+    bufferevent_trigger(bev_, EV_WRITE, 0);
   }
   else
   {

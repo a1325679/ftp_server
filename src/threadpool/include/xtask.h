@@ -8,11 +8,11 @@ public:
     return true;
   }
 
-  int sock = 0;
-	int thread_id = 0;
-  std::string ipaddr;
-  int portFrom;
+  int sock_ = 0;
+	int thread_id_ = 0;
+  std::string ipaddr_;
+  int port_from_;
   // 初始化任务
-  struct event_base* base = 0;
+  struct event_base* base_ = 0;
 };
 #endif

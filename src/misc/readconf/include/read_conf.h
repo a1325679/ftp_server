@@ -8,36 +8,36 @@ public:
 	~Config();
 	static Config *GetInstance()
 	{
-		if (m_instance == nullptr)
+		if (m_instance_ == nullptr)
 		{
 
-			if (m_instance == nullptr)
+			if (m_instance_ == nullptr)
 			{
-				m_instance = new Config();
+				m_instance_ = new Config();
 			}
 		}
-		return m_instance;
+		return m_instance_;
 	}
 	class CGarhuishou
 	{
 	public:
 		~CGarhuishou()
 		{
-			if (Config::m_instance)
+			if (Config::m_instance_)
 			{
-				delete Config::m_instance;
-				Config::m_instance = nullptr;
+				delete Config::m_instance_;
+				Config::m_instance_ = nullptr;
 			}
 		}
 	};
 	bool Load(const char *pconfName);
 	const char *GetString(const char *p_itemname);
 	int GetIntDefault(const char *p_itemname, const int def);
-	std::vector<LPConfItem> m_ConfigItemList;
-
 private:
 	Config();
-	static Config *m_instance;
+	static Config *m_instance_;
+  static CGarhuishou cg_;
+  std::vector<LPConfItem>m_config_item_list_;
 };
 
 #endif

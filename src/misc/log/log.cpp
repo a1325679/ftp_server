@@ -12,9 +12,6 @@
 #else
 #include <Windows.h>
 #endif
-#include "read_conf.h"
-#include "macor.h"
-#include "log.h"
 #include "func.h"
 using namespace std;
 static char err_levels[][20] = {
@@ -29,32 +26,32 @@ static char err_levels[][20] = {
     {"debug"}   // 8：调试
 };
 
-MyLog *MyLog::m_instance = nullptr;
+MyLog *MyLog::m_instance_ = nullptr;
 MyLog *MyLog::GetInstance()
 {
-  if (m_instance == nullptr)
+  if (m_instance_ == nullptr)
   {
-    if (m_instance == nullptr)
+    if (m_instance_ == nullptr)
     {
-      m_instance = new MyLog;
+      m_instance_ = new MyLog;
     }
   }
-  return m_instance;
+  return m_instance_;
 }
 bool MyLog::Init(const char *logfile)
 {
-  fd = fopen(logfile, "a+");
-  if (fd == nullptr)
+  fd_ = fopen(logfile, "a+");
+  if (fd_ == nullptr)
   {
     return false;
   }
-  level = Config::GetInstance()->GetIntDefault("LogLevel", 5);
+  level_ = Config::GetInstance()->GetIntDefault("LogLevel", 5);
   return true;
 }
 bool MyLog::AddMessage(std::string str)
 {
   str += "\r\n";
-  message_queue.push_back(str);
+  message_queue_.push_back(str);
   // fputs(str.c_str(), fd);
   return true;
 }
@@ -63,8 +60,8 @@ bool MyLog::AddMessage(std::string str)
 bool MyLog::Log(int level, const char *fmt, ...)
 {
   va_list args;
+  string str;
 #ifdef _WIN32
-  std::string str;
   time_t now = time(nullptr);
   tm *curr_tm = localtime(&now);
   char strcurrtime[40] = {0};
@@ -82,7 +79,6 @@ bool MyLog::Log(int level, const char *fmt, ...)
   struct timeval tv;
   struct tm tm;
   time_t sec;
-  string str;
   memset(&tv, 0, sizeof(struct timeval));
   memset(&tm, 0, sizeof(struct tm));
   gettimeofday(&tv, NULL);
@@ -103,12 +99,7 @@ bool MyLog::Log(int level, const char *fmt, ...)
   vsprintf(errstr, fmt, args);
   va_end(args);
   str += errstr;
-  if (level == 0)
-  {
-    std::cout << str << std::endl;
-    return true;
-  }
-  if (level < this->level)
+  if (level < this->level_)
   {
     AddMessage(str);
   }
@@ -117,7 +108,7 @@ bool MyLog::Log(int level, const char *fmt, ...)
 void MyLog::PrintLogsThread(void *args)
 {
   MyLog *t = (MyLog *)args;
-  for (;;)
+  while(!t->program_exit_)
   {
     if (t->IsEmptyMessageQueue())
     {
@@ -125,7 +116,6 @@ void MyLog::PrintLogsThread(void *args)
     }
     else
     {
-      // fwrite(t->GetMessageQueueFrontElement().c_str(), 1, t->GetMessageQueueFrontElement().size(), t->GetFd());
       string s = t->GetMessageQueueFrontElement().c_str();
       s.pop_back();
       fputs(s.c_str(), t->GetFd());
@@ -134,15 +124,40 @@ void MyLog::PrintLogsThread(void *args)
     }
   }
 }
+  std::string MyLog::GetMessageQueueFrontElement()
+  {
+    std::string str = message_queue_.front();
+    message_queue_.pop_front();
+    return str;
+  }
+  bool MyLog::IsEmptyMessageQueue()
+  {
+    return message_queue_.empty();
+  }
+  FILE *MyLog::GetFd()
+  {
+    return fd_;
+  }
+  void MyLog::SetLogStatus(bool flag) {
+    program_exit_ = !flag;
+  }
+  void MyLog::flushMessage()
+  {
+    while (!message_queue_.empty())
+    {
+      fputs(GetMessageQueueFrontElement().c_str(), GetFd());
+      fflush(GetFd());
+    }
+  }
 MyLog::~MyLog()
 {
-  while (!message_queue.empty())
+  while (!message_queue_.empty())
   {
     fputs(GetMessageQueueFrontElement().c_str(), GetFd());
     fflush(GetFd());
   }
-  fclose(fd);
+  fclose(fd_);
 }
-MyLog::MyLog() : programExit_(false)
+MyLog::MyLog() : program_exit_(false),fd_(0),level_(0)
 {
 }

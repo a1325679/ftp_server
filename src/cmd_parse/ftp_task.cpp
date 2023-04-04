@@ -6,7 +6,6 @@
 #include<io.h>
 #endif
 #include <iostream>
-#include "threadpool.h"
 using namespace std;
 void FtpTask::Send(std::string data)
 {
@@ -14,53 +13,53 @@ void FtpTask::Send(std::string data)
 }
 void FtpTask::Send(const char* data, int datasize)
 {
-	if (!bev)return;
-	bufferevent_write(bev, data, datasize);
+	if (!bev_)return;
+	bufferevent_write(bev_, data, datasize);
 }
 void FtpTask::Close()
 {
-	if (bev)
+	if (bev_)
 	{
-		bufferevent_free(bev);
-		bev = 0;
+		bufferevent_free(bev_);
+		bev_ = 0;
 	}
-	if (fp)
+	if (fp_)
 	{
     printf("fp is free\n");
-		fclose(fp);
-    fp = 0;
+		fclose(fp_);
+    fp_ = 0;
   }
 }
 //连接数据通道
 void FtpTask::ConnectPORT()
 {
-	if (ip.empty() || port <= 0 || !base)
+	if (ip_.empty() || port_ <= 0 || !base_)
 	{
 		//cout << "ConnectPORT failed ip or port or base is null" << endl;
 		return;
 	}
 	Close();
-	bev = bufferevent_socket_new(base, -1, BEV_OPT_CLOSE_ON_FREE|BEV_OPT_THREADSAFE);
+	bev_ = bufferevent_socket_new(base_, -1, BEV_OPT_CLOSE_ON_FREE|BEV_OPT_THREADSAFE);
 	sockaddr_in sin;
 	memset(&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(port);
-	evutil_inet_pton(AF_INET, ip.c_str(), &sin.sin_addr.s_addr);
+	sin.sin_port = htons(port_);
+	evutil_inet_pton(AF_INET, ip_.c_str(), &sin.sin_addr.s_addr);
 	//设置回调和权限
-	SetCallback(bev);
+	SetCallback(bev_);
 	//添加超时 
 	timeval rt = { 600,0 };
-	bufferevent_set_timeouts(bev, &rt, 0);
-	bufferevent_socket_connect(bev, (sockaddr*)&sin, sizeof(sin));
+	bufferevent_set_timeouts(bev_, &rt, 0);
+	bufferevent_socket_connect(bev_, (sockaddr*)&sin, sizeof(sin));
 }
 //回复cmd消息
 void FtpTask::ResCMD(string msg)
 {
-	if (!cmdTask || !cmdTask->bev)return;
+	if (!cmd_task_ || !cmd_task_->bev_)return;
 	//cout << "ResCMD:" << msg << endl;
 	if (msg[msg.size() - 1] != '\n')
 		msg += "\r\n";
-	bufferevent_write(cmdTask->bev, msg.c_str(), msg.size());
+	bufferevent_write(cmd_task_->bev_, msg.c_str(), msg.size());
 }
 void FtpTask::SetCallback(struct bufferevent* bev)
 {

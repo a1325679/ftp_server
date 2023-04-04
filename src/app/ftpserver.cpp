@@ -19,23 +19,15 @@
 #include <string.h>
 #include<TlHelp32.h>
 #endif
-#include "log.h"
-#include "read_conf.h"
-#include "macor.h"
-#include "ftp_factory.h"
-#include "global.h"
 #include "func.h"
-#include "threadpool2.h"
 using namespace std;
 
-ThreadPool *g_pool = new ThreadPool();
 void listen_cb(struct evconnlistener *e, evutil_socket_t s, struct sockaddr *a, int socklen, void *arg)
 {
   event_base *base = (event_base *)arg;
-  //Task *task = FtpFactory::Get()->CreateTask();
   XTask* task = FtpFactory::Get()->CreateTask();
-  task->sock = s;
-  task->base = base;
+  task->sock_ = s;
+  task->base_ = base;
 
   struct sockaddr_in *sock = (struct sockaddr_in *)a;
   int port = ntohs(sock->sin_port);
@@ -46,86 +38,12 @@ void listen_cb(struct evconnlistener *e, evutil_socket_t s, struct sockaddr *a, 
   char str[INET_ADDRSTRLEN]; // INET_ADDRSTRLEN这个宏系统默认定义 16。
   inet_ntop(AF_INET, &in, str, sizeof(str));
 #endif
-  task->ipaddr = str;
-  task->portFrom = port;
+  task->ipaddr_ = str;
+  task->port_from_ = port;
   XThreadPool::Get()->Dispatch(task);
-  log(NOTICE, "%s:%d 已连接",task->ipaddr.c_str(), task->portFrom);
+  log(NOTICE, "%s:%d 已连接",task->ipaddr_.c_str(), task->port_from_);
 
 }
-#ifndef _WIN32
-const char* getProcessPidByName(const char *proc_name)
-{
-  FILE *fp;
-  char buf[100];
-  char cmd[200] = {'\0'};
-  pid_t pid = -1;
-  sprintf(cmd, "pidof %s", proc_name);
-  if((fp = popen(cmd, "r")) != NULL)
-  {
-    if(fgets(buf, 255, fp) != NULL)
-    {
-      pclose(fp);
-      pid_t p = getpid();
-      std::string own = to_string(p);
-      std::string procid = buf;
-      vector<string> sv;
-      split(procid,sv,' ');
-      if(sv.size()==1){
-        return nullptr;
-      }
-      for(auto &a:sv){
-        if(a!=own) {
-          return a.c_str();
-        }
-      }
-      return nullptr;
-    }
-  }
-  pclose(fp);
-  return nullptr;
-}
-int ParseParamMain(int argc,const char** argv) {
-  if(argc > 2) {
-    return -1;
-  }
-  if(strcmp(argv[1],"start")==0) {
-    const char* proc = getProcessPidByName("./FtpServer");
-    if(proc!=nullptr) {
-      return 1;
-    }
-    return 0;
-  }else if(strcmp(argv[1],"stop")==0) {
-    const char* proc = getProcessPidByName("./FtpServer");
-    if(proc==nullptr) {
-      return -2;
-    }
-    std::string emit_SIGUSR1_to_proc = "kill -USR1 ";
-    emit_SIGUSR1_to_proc+=proc;
-    system(emit_SIGUSR1_to_proc.c_str());
-    return 3;
-  }
-  return -1;
-}
-#else
-int ParseParamMain(int argc,const char** argv){
-  if(argc > 2) {
-    return -1;
-  }
-  HANDLE proc = GetHandleFromProcessName("FtpServer.exe");
-
-  if(strcmp(argv[1],"start")==0) {
-    return 0;
-  }else if(strcmp(argv[1],"stop")==0) {
-    if(proc==nullptr) {
-      return -2;
-    }
-    TerminateProcess(proc, 0);
-    return 3;
-  }
-  return -1;
-}
-
-#endif
 int main(int argc,const char** argv)
 {
   if(argc > 1) {
@@ -144,14 +62,12 @@ int main(int argc,const char** argv)
       return 0;
     }
   }
-  #ifdef _WIN32
-  HWND hWnd = GetConsoleWindow();
-  ShowWindow(hWnd, SW_HIDE);
-  #endif
-  if(ftp_init() != 0) {
+  if(FtpInit() != 0) {
     return 0;
   }
-#if _WIN32
+#ifdef _WIN32
+  HWND hWnd = GetConsoleWindow();
+  ShowWindow(hWnd, SW_HIDE);
   WSADATA wsa;
   WSAStartup(MAKEWORD(2, 2), &wsa);
   evthread_use_windows_threads();
@@ -166,7 +82,7 @@ int main(int argc,const char** argv)
   {
     log(ERRORS,"even_base create failed! %s:%d",__FILE__,__LINE__);
   }
-  // 监听端口
+  // 监听端口 
   // socket ，bind，listen 绑定事件
   sockaddr_in sin;
   memset(&sin, 0, sizeof(sin));

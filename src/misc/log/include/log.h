@@ -1,5 +1,5 @@
-#ifndef _LOG_H
-#define _LOG_H
+#ifndef _LOG_H_
+#define _LOG_H_
 #include <list>
 #include <string>
 #include <stdarg.h>
@@ -7,35 +7,29 @@
 class MyLog
 {
 public:
-  bool programExit_;
-  static MyLog *GetInstance();
-  bool Init(const char *logfile);
   ~MyLog();
-  bool Log(int level,const char *fmt, ...);
-  bool AddMessage(std::string str);
+
+  static MyLog *GetInstance();
+
   static void PrintLogsThread(void *args);
-  std::string GetMessageQueueFrontElement()
-  {
-    std::string str = message_queue.front();
-    message_queue.pop_front();
-    return str;
-  }
-  bool IsEmptyMessageQueue()
-  {
-    return message_queue.empty();
-  }
-  FILE *GetFd()
-  {
-    return fd;
-  }
-  void flushMessage()
-  {
-    while (!message_queue.empty())
-    {
-      fputs(GetMessageQueueFrontElement().c_str(), GetFd());
-      fflush(GetFd());
-    }
-  }
+
+  bool Init(const char *logfile);
+
+
+  bool Log(int level,const char *fmt, ...);
+
+  bool AddMessage(std::string str);
+
+  std::string GetMessageQueueFrontElement();
+
+  bool IsEmptyMessageQueue();
+
+  FILE *GetFd();
+
+  void SetLogStatus(bool flag = true);
+
+  void flushMessage();
+
   class CGarge
   {
   public:
@@ -44,16 +38,17 @@ public:
     }
     ~CGarge()
     {
-      delete m_instance;
+      delete m_instance_;
     }
   };
 
 private:
-  CGarge cg;
   MyLog();
-  static MyLog *m_instance;
-  std::list<std::string> message_queue;
-  FILE *fd;
-  int level;
+  FILE *fd_;
+  int level_;
+  bool program_exit_;
+  static CGarge cg_;
+  static MyLog *m_instance_;
+  std::list<std::string> message_queue_;
 };
 #endif

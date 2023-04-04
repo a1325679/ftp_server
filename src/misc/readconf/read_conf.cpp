@@ -1,9 +1,9 @@
 #include "read_conf.h"
+#include "func.h"
 #include <iostream>
 #include <string>
 #include <assert.h>
 #include <string.h>
-#include "func.h"
 using namespace std;
 
 #ifdef _WIN32
@@ -11,7 +11,7 @@ using namespace std;
 #define strncasecmp _strnicmp 
 #endif
 
-Config *Config::m_instance = nullptr;
+Config *Config::m_instance_ = nullptr;
 
 Config::Config()
 {
@@ -19,11 +19,11 @@ Config::Config()
 Config::~Config()
 {
 	std::vector<LPConfItem>::iterator pos;
-	for (pos = m_ConfigItemList.begin(); pos != m_ConfigItemList.end(); pos++)
+	for (pos = m_config_item_list_.begin(); pos != m_config_item_list_.end(); pos++)
 	{
 		delete (*pos);
 	}
-	m_ConfigItemList.clear();
+	m_config_item_list_.clear();
 }
 bool Config::Load(const char *pconfName)
 {
@@ -71,7 +71,7 @@ bool Config::Load(const char *pconfName)
 			Ltrim(p_confitem->ItemName);
 			Rtrim(p_confitem->ItemContent);
 			Ltrim(p_confitem->ItemContent);
-			m_ConfigItemList.push_back(p_confitem); // 内存要释放，因为这里是new出来的
+			m_config_item_list_.push_back(p_confitem); // 内存要释放，因为这里是new出来的
 		}
 	}
 	fclose(fp);
@@ -80,7 +80,7 @@ bool Config::Load(const char *pconfName)
 const char *Config::GetString(const char *p_itemname)
 {
 	std::vector<LPConfItem>::iterator pos;
-	for (pos = m_ConfigItemList.begin(); pos != m_ConfigItemList.end(); pos++)
+	for (pos = m_config_item_list_.begin(); pos != m_config_item_list_.end(); pos++)
 	{
 		if (strcasecmp((*pos)->ItemName, p_itemname) == 0)
 		{
@@ -92,7 +92,7 @@ const char *Config::GetString(const char *p_itemname)
 int Config::GetIntDefault(const char *p_itemname, const int def)
 {
 	std::vector<LPConfItem>::iterator pos;
-	for (pos = m_ConfigItemList.begin(); pos != m_ConfigItemList.end(); pos++)
+	for (pos = m_config_item_list_.begin(); pos != m_config_item_list_.end(); pos++)
 	{
 		if (strcasecmp((*pos)->ItemName, p_itemname) == 0)
 		{

@@ -19,8 +19,8 @@ void XThread::Start()
 
 void XThread::Main()
 {
-  event_base_dispatch(base);
-  event_base_free(base);
+  event_base_dispatch(base_);
+  event_base_free(base_);
 }
 static void NotifyCB(evutil_socket_t fd, short which, void *args)
 {
@@ -48,18 +48,18 @@ bool XThread::Setup()
   }
 #endif
 
-  notify_send_fd = fds[1];
+  notify_send_fd_ = fds[1];
 
   event_config *ev_conf = event_config_new();
   event_config_set_flag(ev_conf, EVENT_BASE_FLAG_NOLOCK);
-  this->base = event_base_new_with_config(ev_conf);
+  this->base_ = event_base_new_with_config(ev_conf);
   event_config_free(ev_conf);
-  if (!base)
+  if (!base_)
   {
-    log(ERRORS, "event_base_new_with_config failed in thread!");
+    log(ERRORS, "event_base_new_with_config failed in thread! %s:%d",__FILE__,__LINE__);
     return false;
   }
-  event *ev = event_new(base, fds[0], EV_READ | EV_PERSIST, NotifyCB, this);
+  event *ev = event_new(base_, fds[0], EV_READ | EV_PERSIST, NotifyCB, this);
   event_add(ev, 0);
   return true;
 }
@@ -79,15 +79,15 @@ void XThread::Notify(evutil_socket_t fd, short which)
     return;
 
   XTask *task = nullptr;
-  tasks_mutex.lock();
-  if (tasks.empty())
+  tasks_mutex_.lock();
+  if (tasks_.empty())
   {
-    tasks_mutex.unlock();
+    tasks_mutex_.unlock();
     return;
   }
-  task = tasks.front();
-  tasks.pop_front();
-  tasks_mutex.unlock();
+  task = tasks_.front();
+  tasks_.pop_front();
+  tasks_mutex_.unlock();
   task->Init();
 }
 
@@ -95,9 +95,9 @@ void XThread::Activate()
 {
 
 #ifdef _WIN32
-  int re = send(this->notify_send_fd, "c", 1, 0);
+  int re = send(this->notify_send_fd_, "c", 1, 0);
 #else
-  int re = write(this->notify_send_fd, "c", 1);
+  int re = write(this->notify_send_fd_, "c", 1);
 #endif
   if (re <= 0)
   {
@@ -109,10 +109,10 @@ void XThread::AddTask(XTask *t)
 {
   if (!t)
     return;
-  t->base = this->base;
-  tasks_mutex.lock();
-  tasks.push_back(t);
-  tasks_mutex.unlock();
+  t->base_ = this->base_;
+  tasks_mutex_.lock();
+  tasks_.push_back(t);
+  tasks_mutex_.unlock();
 }
 
 XThread::XThread()

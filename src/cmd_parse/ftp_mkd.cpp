@@ -1,6 +1,5 @@
 #include "ftp_mkd.h"
-#include "macor.h"
-#include "log.h"
+#include "func.h"
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
@@ -18,8 +17,8 @@ void FtpMkd::Parse(std::string type, std::string msg)
     msg.pop_back();
   }
   int head = msg.find(" ");
-  std::string name = rootDir + cmdTask->curDir +"/"+ msg.substr(head + 1);
-  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr.c_str(), portFrom, type.c_str(), name.c_str());
+  std::string name = rootDir_ + cmd_task_->curDir_ +"/"+ msg.substr(head + 1);
+  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr_.c_str(), port_from_, type.c_str(), name.c_str());
 
   int ret;
 #ifdef _WIN32

@@ -1,11 +1,10 @@
 #include "ftp_server_cmd.h"
+#include "func.h"
 #include <event2/event.h>
 #include <event2/bufferevent.h>
 #include <iostream>
 #include <string.h>
 #include <string>
-#include "threadpool.h"
-#include "global.h"
 using namespace std;
 // 注册命令处理对象 不需要考虑线程安全，调用时还未分发到线程
 void FtpServerCMD::Reg(std::string cmd, FtpTask *call)
@@ -55,20 +54,20 @@ static void ReadEvent(bufferevent* bev,void *arg)
 		if (task->calls.find(type) != task->calls.end())
 		{
 			FtpTask *t = task->calls[type];
-			t->cmdTask = task; // 用来处理回复命令和目录
-			t->ip = task->ip;
-			t->port = task->port;
-			t->base = task->base;
-      t->moveFile = task->moveFile;
-      t->ipaddr = task->ipaddr;
-      t->portFrom = task->portFrom;
+			t->cmd_task_ = task; // 用来处理回复命令和目录
+			t->ip_ = task->ip_;
+			t->port_ = task->port_;
+			t->base_ = task->base_;
+      t->move_file_ = task->move_file_;
+      t->ipaddr_ = task->ipaddr_;
+      t->port_from_ = task->port_from_;
       t->Parse(type, data);
       if (type == "PORT")
 			{
-				task->ip = t->ip;
-				task->port = t->port;
+				task->ip_ = t->ip_;
+				task->port_ = t->port_;
 			}else if(type=="RNFR") {
-        task->moveFile = t->moveFile;
+        task->move_file_ = t->move_file_;
       }
     }
     else
@@ -99,16 +98,16 @@ bool FtpServerCMD::Init()
 	//cout << "XFtpServerCMD::Init()" << endl;
 	// 监听socket bufferevent
 	//  base socket
-	bufferevent *bev = bufferevent_socket_new(base, sock, BEV_OPT_CLOSE_ON_FREE);
+	bufferevent *bev = bufferevent_socket_new(base_, sock_, BEV_OPT_CLOSE_ON_FREE);
 	if (!bev)
 	{
 		delete this;
 		return false;
 	}
-	this->bev = bev;
+	this->bev_ = bev;
 	this->SetCallback(bev);
 	// 添加超时
-	timeval rt = {60, 0};
+	timeval rt = {600, 0};
 	bufferevent_set_timeouts(bev, &rt, 0);
 	string msg = "220 Welcome to libevent XFtpServer\r\n";
 	int ret = bufferevent_write(bev, msg.c_str(), msg.size());

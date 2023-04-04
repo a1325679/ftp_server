@@ -1,16 +1,25 @@
 #ifndef _FUNC_H
 #define _FUNC_H
+#include "log.h"
+#include "read_conf.h"
+#include "macor.h"
+#include "ftp_factory.h"
+#include "global.h"
+#include "func.h"
+#include "threadpool.h"
+
 #include<vector>
 #include<string>
 typedef void *HANDLE;
 void Rtrim(char *str);
 void Ltrim(char *str);
+void Split(const std::string& s, std::vector<std::string>& sv,const char flag = ' ');
 bool InitSignal();
-bool LogSignal();
 void ClearWork();
 
-int ftp_daemon();
-int ftp_init(const char* conf_path = "conf.conf");
+int FtpDaemon();
+int FtpInit(const char* conf_path = "conf.conf");
 HANDLE GetHandleFromProcessName(const char *process_name);
-void split(const std::string& s, std::vector<std::string>& sv,const char flag = ' ');
+const char *GetProcessPidByName(const char *proc_name);
+int ParseParamMain(int argc, const char **argv);
 #endif

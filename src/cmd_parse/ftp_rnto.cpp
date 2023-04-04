@@ -1,6 +1,5 @@
 #include "ftp_rnto.h"
-#include "macor.h"
-#include "log.h"
+#include "func.h"
 #ifdef _WIN32
 #include <ctime>
 #include <direct.h>
@@ -23,11 +22,11 @@ void FtpRnto::Parse(std::string type, std::string msg)
     msg.pop_back();
     msg.pop_back();
   }
-  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr.c_str(), portFrom, type.c_str(), msg.c_str());
+  log(NOTICE, "%s:%d -> 解析命令%s,命令内容为%s", ipaddr_.c_str(), port_from_, type.c_str(), msg.c_str());
 
   int pos = msg.find(" ");
   std::string file_name = msg.substr(pos + 1);
-  file_name = rootDir + file_name;
+  file_name = rootDir_ + file_name;
 #ifdef _WIN32
   std::string cmd = "move ";
   cmd += moveFile;
@@ -38,7 +37,7 @@ void FtpRnto::Parse(std::string type, std::string msg)
   //system(cmd.c_str());
   rename(moveFile.c_str(), file_name.c_str());
 #else
-  rename(moveFile.c_str(), file_name.c_str());
+  rename(move_file_.c_str(), file_name.c_str());
 #endif
   ResCMD("250 move success .");
 }
