@@ -3,9 +3,9 @@
 
 #include "task.h"
 #include <string>
-#include "xtask.h"
+#include "task.h"
 struct bufferevent;
-class FtpTask : public XTask
+class FtpTask : public Task
 {
 public:
   FtpTask() {

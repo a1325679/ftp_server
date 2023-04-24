@@ -2,33 +2,33 @@
 #include <thread>
 #include <iostream>
 #include <event2/event.h>
-#include "xtask.h"
+#include "task.h"
 #include "macor.h"
 #ifndef _WIN32
 #include <unistd.h>
 #endif
 
-void XThread::Start()
+void Thread::Start()
 {
   Setup();
   // 启动线程
-  std::thread th(&XThread::Main, this);
+  std::thread th(&Thread::Main, this);
   // 断开与主线程联系
   th.detach();
 }
 
-void XThread::Main()
+void Thread::Main()
 {
   event_base_dispatch(base_);
   event_base_free(base_);
 }
 static void NotifyCB(evutil_socket_t fd, short which, void *args)
 {
-  XThread *t = (XThread *)args;
+  Thread *t = (Thread *)args;
   t->Notify(fd, which);
 }
 // 安装线程，初始化event_base和管道监听事件用于激活
-bool XThread::Setup()
+bool Thread::Setup()
 {
 #ifdef _WIN32
   evutil_socket_t fds[2];
@@ -65,7 +65,7 @@ bool XThread::Setup()
 }
 
 // 收到主线程发出的激活消息（线程池的分发）
-void XThread::Notify(evutil_socket_t fd, short which)
+void Thread::Notify(evutil_socket_t fd, short which)
 {
   // 水平触发 只要没有接受完成，会再次进来
   char buf[2] = {0};
@@ -78,7 +78,7 @@ void XThread::Notify(evutil_socket_t fd, short which)
   if (re <= 0)
     return;
 
-  XTask *task = nullptr;
+  Task *task = nullptr;
   tasks_mutex_.lock();
   if (tasks_.empty())
   {
@@ -91,7 +91,7 @@ void XThread::Notify(evutil_socket_t fd, short which)
   task->Init();
 }
 
-void XThread::Activate()
+void Thread::Activate()
 {
 
 #ifdef _WIN32
@@ -105,7 +105,7 @@ void XThread::Activate()
   }
 }
 
-void XThread::AddTask(XTask *t)
+void Thread::AddTask(Task *t)
 {
   if (!t)
     return;
@@ -115,10 +115,10 @@ void XThread::AddTask(XTask *t)
   tasks_mutex_.unlock();
 }
 
-XThread::XThread()
+Thread::Thread()
 {
 }
 
-XThread::~XThread()
+Thread::~Thread()
 {
 }

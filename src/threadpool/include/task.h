@@ -1,7 +1,7 @@
-#ifndef __XTASK__
-#define __XTASK__
+#ifndef __TASK__
+#define __TASK__
 #include<string>
-class XTask
+class Task
 {
 public:
 	virtual bool Init() {

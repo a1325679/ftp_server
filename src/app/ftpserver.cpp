@@ -25,7 +25,7 @@ using namespace std;
 void listen_cb(struct evconnlistener *e, evutil_socket_t s, struct sockaddr *a, int socklen, void *arg)
 {
   event_base *base = (event_base *)arg;
-  XTask* task = FtpFactory::Get()->CreateTask();
+  Task* task = FtpFactory::Get()->CreateTask();
   task->sock_ = s;
   task->base_ = base;
 
@@ -40,7 +40,7 @@ void listen_cb(struct evconnlistener *e, evutil_socket_t s, struct sockaddr *a, 
 #endif
   task->ipaddr_ = str;
   task->port_from_ = port;
-  XThreadPool::Get()->Dispatch(task);
+  ThreadPool::Get()->Dispatch(task);
   log(NOTICE, "%s:%d 已连接",task->ipaddr_.c_str(), task->port_from_);
 
 }
@@ -74,7 +74,7 @@ int main(int argc,const char** argv)
 #else
   evthread_use_pthreads();
 #endif
-  XThreadPool::Get()->Init(thread_count_);
+  ThreadPool::Get()->Init(thread_count_);
   log(NOTICE, "%d个线程已初始化完成", thread_count_);
 
   event_base *base = event_base_new();

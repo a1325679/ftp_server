@@ -3,8 +3,8 @@
 #include<list>
 #include<mutex>
 #include<event2/event.h>
-#include "xtask.h"
-class XThread
+#include "task.h"
+class Thread
 {
 public:
 	void Start();
@@ -19,18 +19,18 @@ public:
 
 	void Activate();
 
-	void AddTask(XTask* t);
+	void AddTask(Task* t);
 
-	XThread();
+	Thread();
 
-	~XThread();
+	~Thread();
 	
 	int id_ = 0;
 public:
 	int notify_send_fd_ = 0;
 	struct event_base* base_ = 0;
 	
-	std::list<XTask*> tasks_;
+	std::list<Task*> tasks_;
 	std::mutex tasks_mutex_;
 
 };
